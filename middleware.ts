@@ -24,14 +24,16 @@ export async function middleware(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
-
-    return NextResponse.redirect(
-      new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url),
-    );
+    // Redirect to login instead of creating guest users
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   const isGuest = guestRegex.test(token?.email ?? '');
+
+  // Block guest users from accessing the app
+  if (isGuest) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
 
   if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
     return NextResponse.redirect(new URL('/', request.url));

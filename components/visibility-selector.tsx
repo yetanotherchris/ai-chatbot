@@ -12,7 +12,6 @@ import { cn } from '@/lib/utils';
 import {
   CheckCircleFillIcon,
   ChevronDownIcon,
-  GlobeIcon,
   LockIcon,
 } from './icons';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
@@ -31,12 +30,13 @@ const visibilities: Array<{
     description: 'Only you can access this chat',
     icon: <LockIcon />,
   },
-  {
-    id: 'public',
-    label: 'Public',
-    description: 'Anyone with the link can access this chat',
-    icon: <GlobeIcon />,
-  },
+  // Public chats are disabled
+  // {
+  //   id: 'public',
+  //   label: 'Public', 
+  //   description: 'Anyone with the link can access this chat',
+  //   icon: <GlobeIcon />,
+  // },
 ];
 
 export function VisibilitySelector({
