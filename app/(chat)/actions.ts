@@ -20,17 +20,34 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
-  const { text: title } = await generateText({
-    model: myProvider.languageModel('title-model'),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
-  });
+  try {
+    console.log('Attempting to generate title for message:', JSON.stringify(message));
+    
+    const { text: title } = await generateText({
+      model: myProvider.languageModel('title-model'),
+      system: `\n
+      - you will generate a short title based on the first message a user begins a conversation with
+      - ensure it is not more than 80 characters long
+      - the title should be a summary of the user's message
+      - do not use quotes or colons`,
+      prompt: JSON.stringify(message),
+    });
 
-  return title;
+    console.log('Generated title successfully:', title);
+    return title;
+  } catch (error) {
+    console.error('Error generating title:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause
+      });
+    }
+    
+    // Return a fallback title instead of crashing
+    return 'New Chat';
+  }
 }
 
 export async function deleteTrailingMessages({ id }: { id: string }) {

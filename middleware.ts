@@ -23,6 +23,18 @@ export async function middleware(request: NextRequest) {
     secureCookie: !isDevelopmentEnvironment,
   });
 
+  // Allow access to login and register pages without authentication
+  if (['/login', '/register'].includes(pathname)) {
+    // If already authenticated, redirect to home
+    if (token) {
+      const isGuest = guestRegex.test(token?.email ?? '');
+      if (!isGuest) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+    }
+    return NextResponse.next();
+  }
+
   if (!token) {
     // Redirect to login instead of creating guest users
     return NextResponse.redirect(new URL('/login', request.url));
@@ -33,10 +45,6 @@ export async function middleware(request: NextRequest) {
   // Block guest users from accessing the app
   if (isGuest) {
     return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  if (token && !isGuest && ['/login', '/register'].includes(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
   }
 
   return NextResponse.next();
