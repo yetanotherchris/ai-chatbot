@@ -2,18 +2,18 @@
   "models": [
     {
       "id": "chat-model",
-      "name": "Grok 4",
-      "description": "xAI's latest model with 256k context window",
-      "openrouterModel": "x-ai/grok-4",
+      "name": "Grok 3",
+      "description": "xAI's stable model with reliable performance",
+      "openrouterModel": "x-ai/grok-3",
       "supportsTools": true,
       "reasoning": false,
       "default": true
     },
     {
       "id": "chat-model-reasoning",
-      "name": "Grok 4 (Reasoning)",
-      "description": "xAI's Grok 4 with enhanced reasoning capabilities",
-      "openrouterModel": "x-ai/grok-4",
+      "name": "Grok 3 (Reasoning)",
+      "description": "xAI's Grok 3 with enhanced reasoning capabilities",
+      "openrouterModel": "x-ai/grok-3",
       "supportsTools": false,
       "reasoning": true
     },
