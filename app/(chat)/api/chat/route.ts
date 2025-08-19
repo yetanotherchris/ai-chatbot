@@ -26,6 +26,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
+import { chatModels } from '@/lib/ai/models';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
 import {
@@ -114,6 +115,7 @@ export async function POST(request: Request) {
         userId: session.user.id,
         title,
         visibility: selectedVisibilityType,
+        model: selectedChatModel,
       });
     } else {
       if (chat.userId !== session.user.id) {
@@ -152,13 +154,42 @@ export async function POST(request: Request) {
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }) => {
         try {
+          // Check if the selected model supports tools and if it's a reasoning model
+          const selectedModel = chatModels.find(model => model.id === selectedChatModel);
+          const supportsTools = selectedModel?.supportsTools !== false;
+          const isReasoningModel = selectedModel?.reasoning === true;
+          
+          // Log OpenRouter request details
+          console.log('\n=== OpenRouter Request ===');
+          console.log('Model ID:', selectedChatModel);
+          console.log('Model Name:', selectedModel?.name || 'Unknown');
+          console.log('OpenRouter Model:', selectedModel?.openrouterModel || 'Unknown');
+          console.log('Supports Tools:', supportsTools);
+          console.log('Is Reasoning Model:', isReasoningModel);
+          
+          // Log shortened version of the last user message
+          const lastUserMessage = uiMessages.filter(msg => msg.role === 'user').pop();
+          if (lastUserMessage) {
+            const messageText = lastUserMessage.parts
+              ?.filter(part => part.type === 'text')
+              .map(part => part.text)
+              .join(' ') || '';
+            const shortenedMessage = messageText.length > 100 
+              ? messageText.substring(0, 100) + '...' 
+              : messageText;
+            console.log('User Message (shortened):', shortenedMessage);
+          }
+          
+          console.log('Total Messages in Conversation:', uiMessages.length);
+          console.log('========================\n');
+          
           const result = streamText({
             model: myProvider.languageModel(selectedChatModel),
             system: systemPrompt({ selectedChatModel, requestHints }),
             messages: convertToModelMessages(uiMessages),
             stopWhen: stepCountIs(5),
             experimental_activeTools:
-              selectedChatModel === 'chat-model-reasoning'
+              isReasoningModel || !supportsTools
                 ? []
                 : [
                     'getWeather',
@@ -167,7 +198,7 @@ export async function POST(request: Request) {
                     'requestSuggestions',
                   ],
             experimental_transform: smoothStream({ chunking: 'word' }),
-            tools: {
+            tools: supportsTools ? {
               getWeather,
               createDocument: createDocument({ session, dataStream }),
               updateDocument: updateDocument({ session, dataStream }),
@@ -175,7 +206,7 @@ export async function POST(request: Request) {
                 session,
                 dataStream,
               }),
-            },
+            } : {},
             experimental_telemetry: {
               isEnabled: isProductionEnvironment,
               functionId: 'stream-text',

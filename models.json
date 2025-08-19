@@ -1,0 +1,53 @@
+{
+  "models": [
+    {
+      "id": "chat-model",
+      "name": "Grok 4",
+      "description": "xAI's latest model with 256k context window",
+      "openrouterModel": "x-ai/grok-4",
+      "supportsTools": true,
+      "reasoning": false,
+      "default": true
+    },
+    {
+      "id": "chat-model-reasoning",
+      "name": "Grok 4 (Reasoning)",
+      "description": "xAI's Grok 4 with enhanced reasoning capabilities",
+      "openrouterModel": "x-ai/grok-4",
+      "supportsTools": false,
+      "reasoning": true
+    },
+    {
+      "id": "chat-model-claude",
+      "name": "Claude 3.7 Sonnet",
+      "description": "Anthropic's advanced large language model",
+      "openrouterModel": "anthropic/claude-3.7-sonnet",
+      "supportsTools": true,
+      "reasoning": false
+    },
+    {
+      "id": "chat-model-claude-reasoning",
+      "name": "Claude 3.7 Sonnet (Reasoning)",
+      "description": "Claude 3.7 with enhanced reasoning capabilities",
+      "openrouterModel": "anthropic/claude-3.7-sonnet",
+      "supportsTools": false,
+      "reasoning": true
+    },
+    {
+      "id": "chat-model-deepseek-r1",
+      "name": "DeepSeek R1 (Free)",
+      "description": "Open-source reasoning model with full reasoning tokens",
+      "openrouterModel": "deepseek/deepseek-r1-0528:free",
+      "supportsTools": false,
+      "reasoning": true
+    },
+    {
+      "id": "chat-model-deepseek-v3",
+      "name": "DeepSeek V3",
+      "description": "Latest DeepSeek model for general tasks",
+      "openrouterModel": "deepseek/deepseek-chat-v3-0324",
+      "supportsTools": false,
+      "reasoning": false
+    }
+  ]
+}

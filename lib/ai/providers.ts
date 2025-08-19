@@ -10,6 +10,7 @@ import {
   reasoningModel,
   titleModel,
 } from './models.test';
+import { chatModels } from './models';
 import { isTestEnvironment } from '../constants';
 
 // OpenRouter configuration
@@ -28,27 +29,48 @@ const openrouter = createOpenAICompatible({
 });
 
 console.log('OpenRouter provider created successfully');
+console.log('Available models from environment:', chatModels.map(m => `${m.id}: ${m.name} (${m.openrouterModel})`));
 
-export const myProvider = isTestEnvironment
-  ? customProvider({
-      languageModels: {
-        'chat-model': chatModel,
-        'chat-model-reasoning': reasoningModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
-      },
-    })
-  : customProvider({
-      languageModels: {
-        'chat-model': openrouter.chatModel('openai/gpt-4o'),
-        'chat-model-reasoning': wrapLanguageModel({
-          model: openrouter.chatModel('openai/gpt-4o'),
+// Create dynamic language models from parsed environment models
+function createLanguageModels() {
+  if (isTestEnvironment) {
+    return {
+      'chat-model': chatModel,
+      'chat-model-reasoning': reasoningModel,
+      'title-model': titleModel,
+      'artifact-model': artifactModel,
+    };
+  }
+
+  const models: Record<string, any> = {};
+
+  // Add all configured chat models
+  chatModels.forEach((model) => {
+    if (model.openrouterModel) {
+      if (model.reasoning) {
+        // Apply reasoning middleware for reasoning models
+        models[model.id] = wrapLanguageModel({
+          model: openrouter.chatModel(model.openrouterModel),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
-        }),
-        'title-model': openrouter.chatModel('openai/gpt-3.5-turbo'),
-        'artifact-model': openrouter.chatModel('openai/gpt-4o'),
-      },
-      imageModels: {
-        'small-model': openrouter.imageModel('openai/dall-e-3'),
-      },
-    });
+        });
+      } else {
+        // Regular model without reasoning
+        models[model.id] = openrouter.chatModel(model.openrouterModel);
+      }
+    }
+  });
+
+  // Add utility models (using first available model as fallback)
+  const primaryModel = chatModels[0]?.openrouterModel || 'openai/gpt-4o';
+  models['title-model'] = openrouter.chatModel('openai/gpt-3.5-turbo'); // Keep lightweight model for titles
+  models['artifact-model'] = openrouter.chatModel(primaryModel);
+
+  return models;
+}
+
+export const myProvider = customProvider({
+  languageModels: createLanguageModels(),
+  imageModels: {
+    'small-model': openrouter.imageModel('openai/dall-e-3'),
+  },
+});

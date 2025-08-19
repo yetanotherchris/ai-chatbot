@@ -94,11 +94,13 @@ export async function saveChat({
   userId,
   title,
   visibility,
+  model,
 }: {
   id: string;
   userId: string;
   title: string;
   visibility: VisibilityType;
+  model?: string;
 }) {
   try {
     return await db.insert(chat).values({
@@ -107,6 +109,7 @@ export async function saveChat({
       userId,
       title,
       visibility,
+      model: model || 'chat-model',
     });
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');

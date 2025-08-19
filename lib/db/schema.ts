@@ -25,6 +25,7 @@ export const chat = sqliteTable('Chat', {
   visibility: text('visibility', { enum: ['public', 'private'] })
     .notNull()
     .default('private'),
+  model: text('model').notNull().default('chat-model'),
 });
 
 export type Chat = InferSelectModel<typeof chat>;
